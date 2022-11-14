@@ -1,8 +1,41 @@
-import Head from 'next/head'
-import Image from 'next/image'
-import styles from '../styles/Home.module.css'
+import React from "react";
+import Head from "next/head";
+import Image from "next/image";
+import styles from "../styles/Home.module.css";
+import { useUser } from "@auth0/nextjs-auth0";
+import { PrismaClient } from "@prisma/client";
 
-export default function Home() {
+export async function getStaticProps() {
+  const prisma = new PrismaClient();
+  const stoics = (await prisma.stoic.findMany()).map((stoic) => stoic.name);
+
+  console.log(stoics);
+
+  return {
+    props: {
+      stoics,
+    },
+  };
+}
+
+export default function Home({ stoics }) {
+  const { user, error, isLoading } = useUser();
+
+  let profile = null;
+
+  if (isLoading) profile = <div>Loading...</div>;
+  if (error) profile = <div>{error.message}</div>;
+
+  profile = user && (
+    <div>
+      <Image src={user.picture} alt={user.name} height={50} width={50} />
+      <div>
+        <h2>{user.name}</h2>
+        <p>{user.email}</p>
+      </div>
+    </div>
+  );
+
   return (
     <div className={styles.container}>
       <Head>
@@ -16,10 +49,24 @@ export default function Home() {
           Welcome to <a href="https://nextjs.org">Next.js!</a>
         </h1>
 
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
+        <h2>DB Results:</h2>
+        {stoics.map((stoic) => (
+          <p key={stoic}>{stoic}</p>
+        ))}
+
+        {profile}
+
+        <div className={styles.grid}>
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/api/auth/login" className={styles.card}>
+            Login
+          </a>
+
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/api/auth/logout" className={styles.card}>
+            Logout
+          </a>
+        </div>
 
         <div className={styles.grid}>
           <a href="https://nextjs.org/docs" className={styles.card}>
@@ -60,12 +107,12 @@ export default function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          Powered by{' '}
+          Powered by{" "}
           <span className={styles.logo}>
             <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
           </span>
         </a>
       </footer>
     </div>
-  )
+  );
 }
