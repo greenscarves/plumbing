@@ -66,6 +66,11 @@ export default function Home({ stoics }) {
           <a href="/api/auth/logout" className={styles.card}>
             Logout
           </a>
+
+          {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+          <a href="/api/insert" className={styles.card}>
+            Insert hello
+          </a>
         </div>
 
         <div className={styles.grid}>
